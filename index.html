@@ -14,15 +14,13 @@
     </style>
 </head>
 <body>
-    <form id="file-ajax-form" method="POST" action="" enctype="multipart/form-data">
+    <form id="file-ajax-form">
         <input type="text" name="text" value="foo">
         <input type="file" name="file">
-        <div>
-            <label for="force-iframe">Force IFrame</label>
-            <input type="checkbox" id="force-iframe">
-        </div>
-        <input type="submit">
+        <input type="file" name="file">
+        <input id="submit" type="submit">
     </form>
+
     <div class="percent-complete"></div>
 
     <script src="jquery-1.11.0.js"></script>
@@ -31,29 +29,39 @@
     <script>
         $(document).ready(function () {
             'use strict';
-            $('#file-ajax-form').submit(function (e) {
-                e.preventDefault();
-                $.ajax({
-                    url: 'respond.php',
-                    // for debugging
-                    forceIFrame: $('#force-iframe').is(':checked'),
-                    method: 'POST',
-                    $files: {
-                        file: $('input[name="file"]')
-                    },
-                    data: { textInput: $('input[name="text"]').val() },
-                    onprogress: function (e) {
-                        if(e.lengthComputable) {
-                            $('.percent-complete').html(e.loaded / e.total);
-                        }
-                    },
-                    success: function (response) {
-                        console.log(response);
-                    },
-                    error: function (jqXHR) {
-                        console.log('error', jqXHR);
+            $('#file-ajax-form').fileAjax({
+                url: 'respond.php',
+                // for debugging
+                forceIFrame: true,
+                method: 'POST',
+                $files: {
+                    file: $('input[name="file"]')
+                },
+                getData: function () {
+                    return {
+                        textInput: $('input[name="text"]').val(),
+                        array: ['a', 'b'],
+                        object: { a: 1, b: [9, 10] }
+                    };
+                },
+                dataType: 'json',
+                onprogress: function (e) {
+                    if(e.lengthComputable) {
+                        $('.percent-complete').html(e.loaded / e.total);
                     }
-                });
+                },
+                beforeSend: function () {
+                    console.log('beforeSend');
+                },
+                success: function (response) {
+                    console.log('success',response);
+                },
+                error: function (jqXHR) {
+                    console.log('error', jqXHR);
+                },
+                complete: function () {
+                    console.log('complete');
+                }
             });
         });
     </script>
