@@ -14,11 +14,37 @@
     </style>
 </head>
 <body>
-    <form id="file-ajax-form">
-        <input type="text" name="text" value="foo">
-        <input type="file" name="file">
-        <input type="file" name="file">
-        <input id="submit" type="submit">
+    <form id="file-ajax-form" action="respond.php">
+        <input type="text" name="text" value="foo"/>
+
+        <input type="text" value="has no name attribute"/>
+
+        <input type="hidden" name="hidden" value="hidden type"/>
+
+        <textarea name="textarea">asdf</textarea>
+
+        <div>
+            <input type="checkbox" name="check[]" value="a"/>a
+            <input type="checkbox" name="check[]" value="b"/>b
+        </div>
+
+        <div>
+            <input type="radio" name="radio" value="1"/>1
+            <input type="radio" name="radio" value="2"/>2
+        </div>
+
+        <div>
+            <input type="checkbox" name="is-awesome" value="yes"/>is awesome?
+        </div>
+
+        <select name="select">
+            <option value="A">A</option>
+            <option value="B">B</option>
+        </select>
+
+        <input type="file" name="file[]"/>
+        <input type="file" name="file[]"/>
+        <input id="submit" type="submit"/>
     </form>
 
     <div class="percent-complete"></div>
@@ -29,21 +55,25 @@
     <script>
         $(document).ready(function () {
             'use strict';
+
             $('#file-ajax-form').fileAjax({
-                url: 'respond.php',
+                // url is optional, defaults to form's action attribute
+                // url: 'respond.php',
+
                 // for debugging
-                forceIFrame: true,
-                method: 'POST',
-                $files: {
-                    file: $('input[name="file"]')
-                },
-                getData: function () {
-                    return {
-                        textInput: $('input[name="text"]').val(),
-                        array: ['a', 'b'],
-                        object: { a: 1, b: [9, 10] }
-                    };
-                },
+                // forceIFrame: false,
+
+                // getData is optional. It will default to the forms inputs that
+                // have name attributes.
+                // If getData is supplied, fileAjax will still obtain
+                // file inputs from the form, but will ignore other inputs.
+                // getData: function () {
+                //     return {
+                //         array: ['a', 'b'],
+                //         object: { a: 1, b: [9, 10] }
+                //     };
+                // },
+
                 dataType: 'json',
                 onprogress: function (e) {
                     if(e.lengthComputable) {
