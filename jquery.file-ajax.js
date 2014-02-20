@@ -109,6 +109,10 @@
         return figGetData ? flattenData(figGetData()) : getFormsData();
     };
 
+    var removeScriptFromResponse = function (text) {
+        return text.replace(/<script.*?>.*?<\/script>/igm, '');
+    };
+
     var ajax2 = function (fig) {
         // get object of $fileElements where the keys are
         // names formatted for a FormData object.
@@ -163,6 +167,7 @@
                 processData : false,
                 contentType: false,
                 data: null,
+                dataType: 'text',
                 beforeSend : function(xhr, settings) {
                     settings.xhr = function () {
                         var xhr = new window.XMLHttpRequest();
@@ -173,9 +178,35 @@
                         return xhr;
                     };
                     settings.data = formData;
-                    // call user's beforeSend method if they gave one.
                     if(fig.beforeSend) {
-                        fig.beforeSend.call(this, xhr, settings);
+                        fig.beforeSend();
+                    }
+                },
+                success: function (response, textStatus, jqXHR) {
+                    response = removeScriptFromResponse(response);
+                    if(fig.dataType.toLowerCase() === 'json') {
+                        response = $.parseJSON(response);
+                    }
+                    if(fig.success) {
+                        fig.success(response, jqXHR.status);
+                    }
+                },
+                error: function (jqXHR) {
+                    var response = removeScriptFromResponse(jqXHR.responseText);
+                    if(fig.dataType.toLowerCase() === 'json') {
+                        response = $.parseJSON(response);
+                    }
+                    else {
+                        response = jqXHR.responseText;
+                    }
+
+                    if(fig.error) {
+                        fig.error(response, jqXHR.status);
+                    }
+                },
+                complete: function () {
+                    if(fig.complete) {
+                        fig.complete();
                     }
                 }
             })), ['$files', 'getData']);
@@ -185,16 +216,12 @@
     var iframeAjax = function (fig) {
         $form.submit(function (e) {
             console.log('iframeAjax');
-            // need to do this before removing fileInputNames;
-
-
             e.stopPropagation();
 
             var iframeID = 'file-ajax-id-' + (new Date()).getTime();
 
             $('body').prepend('<iframe width="0" height="0" style="display:none;" ' +
                     'name="' + iframeID + '" id="' + iframeID + '"/>');
-
 
             var nonFileElements = {};
             getNonFileInputs().each(function () {
@@ -217,15 +244,27 @@
             };
 
             var $iframe = $('#' + iframeID);
-            $iframe.on('load', function(e) {
-                var iframeContents = $iframe.contents().find('body').html();
+
+            // fired when document loaded.
+            $.FileAjaxResponseCode = function (responseCode) {
+                var iframeContents = removeScriptFromResponse(
+                    $iframe.contents().find('body').html()
+                );
                 var response = fig.dataType && fig.dataType.toLowerCase() === 'json' ?
                         $.parseJSON(iframeContents) : iframeContents;
 
-                fig.success(response);
+                if(responseCode >= 200 && responseCode < 300) {
+                    fig.success(response, responseCode);
+                }
+                else {
+                    fig.error(response, responseCode);
+                }
+                fig.complete();
+            };
+
+            $iframe.on('load', function(e) {
                 restoreNonFileInputsNames();
                 removeHiddenInputs();
-                fig.complete();
                 $iframe.remove();
             });
 

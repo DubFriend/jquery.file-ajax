@@ -1,5 +1,16 @@
 <?php
 
+function setJqueryFileAjaxResponseCode ($response, $httpResponseCode = 200) {
+    http_response_code($httpResponseCode);
+    $id = 'file-ajax-response-code-id-' . uniqid();
+    return $response . '' .
+    '<script id="' . $id . '">' .
+        'window.parent.jQuery.FileAjaxResponseCode(' . $httpResponseCode . ');' .
+        //'var thisScript = document.getElementById("' . $id . '");' .
+        //'thisScript.parentNode.removeChild(thisScript);' .
+    '</script>';
+}
+
 function unzipFiles($file) {
     $files = array();
 
@@ -15,8 +26,6 @@ function unzipFiles($file) {
 
     return $files;
 }
-
-// echo print_r(unzipFiles($_FILES['file']));
 
 function uploadFile ($file) {
     if(is_array($file['name'])) {
@@ -42,58 +51,12 @@ function uploadFile ($file) {
             );
         }
     }
-
-    // if ($file["error"] > 0) {
-    //     return array('error' => $file['error']);
-    // }
-    // else {
-    //     move_uploaded_file(
-    //         $file["tmp_name"],
-    //         "uploads/" . $file["name"]
-    //     );
-
-    //     return array(
-    //         'name' => $file['name'],
-    //         'type' => $file['type'],
-    //         'size' => $file['size'],
-    //         'tmp_name' => $file['tmp_name']
-    //     );
-    // }
 }
 
 $response = uploadFile($_FILES['file']);
 
-// $response = array();
-
-// foreach($_FILES['file'] as $file) {
-//     $response[] = uploadFile($file);
-// }
-
-
-
-// foreach(is_array($_FILES['file']) ? $_FILES['file'] : array($_FILES['file']) as $file) {
-//     uploadFile($file);
-// }
-
-// if ($_FILES["file"]["error"] > 0) {
-//     $response = array('error' => $_FILES['file']['error']);
-// }
-// else {
-//     move_uploaded_file(
-//         $_FILES["file"]["tmp_name"],
-//         "uploads/" . $_FILES["file"]["name"]
-//     );
-
-//     $response = array(
-//         'name' => $_FILES['file']['name'],
-//         'type' => $_FILES['file']['type'],
-//         'size' => $_FILES['file']['size'],
-//         'tmp_name' => $_FILES['file']['tmp_name']
-//     );
-// }
-
-echo json_encode(array_merge(
+echo setJqueryFileAjaxResponseCode(json_encode(array_merge(
     array('FILES' => $response),
     array('POST' => $_POST)
-));
+)), 200);
 ?>
