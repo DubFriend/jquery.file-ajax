@@ -200,8 +200,14 @@
                     if(fig.dataType.toLowerCase() === 'json') {
                         response = $.parseJSON(response);
                     }
-                    if(fig.success) {
-                        fig.success(response, metaData);
+
+                    if(metaData.status >= 200 && metaData.status < 300) {
+                        if(fig.success) {
+                            fig.success(response, metaData);
+                        }
+                    }
+                    else if(fig.error) {
+                        fig.error(response, metaData);
                     }
                 },
                 error: function (jqXHR) {
@@ -265,16 +271,20 @@
                         $.parseJSON(response) : response;
 
                 if(metaData && metaData.status >= 200 && metaData.status < 300) {
-                    fig.success(response, metaData);
+                    if(fig.success) {
+                        fig.success(response, metaData);
+                    }
                 }
-                else {
+                else if(fig.error) {
                     fig.error(response, metaData);
                 }
 
                 restoreNonFileInputsNames();
                 removeHiddenInputs();
                 $iframe.remove();
-                fig.complete();
+                if(fig.complete) {
+                    fig.complete();
+                }
             });
 
             // need getData before removeNonFileInputsNames
