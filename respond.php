@@ -1,5 +1,4 @@
 <?php
-http_response_code(200);
 
 function setJqueryFileAjaxResponseCode ($response, $httpResponseCode = 200) {
     // setting actual response code to an error response breaks ie8
@@ -10,17 +9,14 @@ function setJqueryFileAjaxResponseCode ($response, $httpResponseCode = 200) {
 
 function unzipFiles($file) {
     $files = array();
-
     foreach($file as $key => $value) {
         foreach($value as $index => $val) {
-
             if(!isset($files[$index])) {
                 $files[$index] = array();
             }
             $files[$index][$key] = $val;
         }
     }
-
     return $files;
 }
 
@@ -57,5 +53,5 @@ $response = uploadFile($_FILES['file']);
 echo setJqueryFileAjaxResponseCode(json_encode(array_merge(
     array('FILES' => $response),
     array('POST' => $_POST)
-)), 409);
+)), 200);
 ?>

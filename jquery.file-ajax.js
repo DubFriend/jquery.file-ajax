@@ -1,8 +1,78 @@
 (function ($) {
     'use strict';
 
-    // $form gets set by $.fn.fileAjax
-    var $form;
+    var isArray = function (value) {
+        return $.isArray(value);
+    };
+
+    var isObject = function (value) {
+        return !isArray(value) && (value instanceof Object);
+    };
+
+    var foreach = function (collection, callback) {
+        for(var i in collection) {
+            if(collection.hasOwnProperty(i)) {
+                callback(collection[i], i, collection);
+            }
+        }
+    };
+
+    var partial = function (f) {
+        var args = Array.prototype.slice.call(arguments, 1);
+        return function () {
+            var remainingArgs = Array.prototype.slice.call(arguments);
+            return f.apply(null, args.concat(remainingArgs));
+        };
+    };
+
+    var union = function () {
+        var united = {}, i;
+        for(i = 0; i < arguments.length; i += 1) {
+            foreach(arguments[i], function (value, key) {
+                united[key] = value;
+            });
+        }
+        return united;
+    };
+
+    var filter = function (collection, callback) {
+        var filtered;
+
+        if(isArray(collection)) {
+            filtered = [];
+            foreach(collection, function (val, key, coll) {
+                if(callback(val, key, coll)) {
+                    filtered.push(val);
+                }
+            });
+        }
+        else {
+            filtered = {};
+            foreach(collection, function (val, key, coll) {
+                if(callback(val, key, coll)) {
+                    filtered[key] = val;
+                }
+            });
+        }
+
+        return filtered;
+    };
+
+    var indexOf = function (object, value) {
+        return $.inArray(value, object);
+    };
+
+    var excludedSet = function (object, excludedKeys) {
+        return filter(object, function (value, key) {
+            return indexOf(excludedKeys, key) === -1;
+        });
+    };
+
+    var bind = function (self, f) {
+        return function boundFunction () {
+            (f || function () {}).apply(self, arguments);
+        };
+    };
 
     var doesEndWithBrackets = function (string) {
         return (/\[\]$/).test(string);
@@ -26,6 +96,9 @@
         });
         return grouped;
     };
+
+    // $form gets set by $.fn.fileAjax
+    var $form;
 
     var getNonFileInputs = function () {
         return $form.find(
@@ -110,11 +183,16 @@
     };
 
     var extractMetaDataFromResonse = function (text) {
-        var data = text.match(/#@#.*#@#/igm);
-        if(data && data[0]) {
-            data = data[0].substring(3, data[0].length - 3);
-            data = $.parseJSON(data);
-            return data;
+        if(text) {
+            var data = text.match(/#@#.*#@#/igm);
+            if(data && data[0]) {
+                data = data[0].substring(3, data[0].length - 3);
+                data = $.parseJSON(data);
+                return data;
+            }
+            else {
+                return null;
+            }
         }
         else {
             return null;
@@ -122,7 +200,12 @@
     };
 
     var extractBodyFromResponse = function (text) {
-        return text.replace(/#@#.*#@#/igm, '');
+        if(text) {
+            return text.replace(/#@#.*#@#/igm, '');
+        }
+        else {
+            return null;
+        }
     };
 
     var ajax2 = function (fig) {
@@ -237,8 +320,10 @@
 
             var iframeID = 'file-ajax-id-' + (new Date()).getTime();
 
-            $('body').prepend('<iframe width="0" height="0" style="display:none;" ' +
-                    'name="' + iframeID + '" id="' + iframeID + '"/>');
+            $('body').prepend(
+                '<iframe width="0" height="0" style="display:none;" ' +
+                'name="' + iframeID + '" id="' + iframeID + '"/>'
+            );
 
             var nonFileElements = {};
             getNonFileInputs().each(function () {
@@ -289,8 +374,8 @@
 
             // need getData before removeNonFileInputsNames
             var data = getData();
-            // remove names of existing inputs so they are not sent to the server
-            // send the data given by getData instead.
+            // remove names of existing inputs so they are not sent to the
+            // server and send the data given by getData instead.
             removeNonFileInputsNames();
             var hiddenInputs = [];
             foreach(data, function (value, name) {
