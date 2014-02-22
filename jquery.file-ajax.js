@@ -109,8 +109,20 @@
         return figGetData ? flattenData(figGetData()) : getFormsData();
     };
 
-    var removeScriptFromResponse = function (text) {
-        return text.replace(/<script.*?>.*?<\/script>/igm, '');
+    var extractMetaDataFromResonse = function (text) {
+        var data = text.match(/#@#.*#@#/igm);
+        if(data && data[0]) {
+            data = data[0].substring(3, data[0].length - 3);
+            data = $.parseJSON(data);
+            return data;
+        }
+        else {
+            return null;
+        }
+    };
+
+    var extractBodyFromResponse = function (text) {
+        return text.replace(/#@#.*#@#/igm, '');
     };
 
     var ajax2 = function (fig) {
@@ -183,25 +195,24 @@
                     }
                 },
                 success: function (response, textStatus, jqXHR) {
-                    response = removeScriptFromResponse(response);
+                    var metaData = extractMetaDataFromResonse(response);
+                    response = extractBodyFromResponse(response);
                     if(fig.dataType.toLowerCase() === 'json') {
                         response = $.parseJSON(response);
                     }
                     if(fig.success) {
-                        fig.success(response, jqXHR.status);
+                        fig.success(response, metaData);
                     }
                 },
                 error: function (jqXHR) {
-                    var response = removeScriptFromResponse(jqXHR.responseText);
+                    var metaData = extractMetaDataFromResonse(jqXHR.responseText);
+                    var response = extractBodyFromResponse(jqXHR.responseText);
                     if(fig.dataType.toLowerCase() === 'json') {
                         response = $.parseJSON(response);
                     }
-                    else {
-                        response = jqXHR.responseText;
-                    }
 
                     if(fig.error) {
-                        fig.error(response, jqXHR.status);
+                        fig.error(response, metaData);
                     }
                 },
                 complete: function () {
@@ -245,27 +256,25 @@
 
             var $iframe = $('#' + iframeID);
 
-            // fired when document loaded.
-            $.FileAjaxResponseCode = function (responseCode) {
-                var iframeContents = removeScriptFromResponse(
-                    $iframe.contents().find('body').html()
-                );
-                var response = fig.dataType && fig.dataType.toLowerCase() === 'json' ?
-                        $.parseJSON(iframeContents) : iframeContents;
+            $iframe.on('load', function(e) {
+                var responseText = $iframe.contents().find('body').html();
+                var metaData = extractMetaDataFromResonse(responseText);
+                var response = extractBodyFromResponse(responseText);
 
-                if(responseCode >= 200 && responseCode < 300) {
-                    fig.success(response, responseCode);
+                response = fig.dataType && fig.dataType.toLowerCase() === 'json' ?
+                        $.parseJSON(response) : response;
+
+                if(metaData && metaData.status >= 200 && metaData.status < 300) {
+                    fig.success(response, metaData);
                 }
                 else {
-                    fig.error(response, responseCode);
+                    fig.error(response, metaData);
                 }
-                fig.complete();
-            };
 
-            $iframe.on('load', function(e) {
                 restoreNonFileInputsNames();
                 removeHiddenInputs();
                 $iframe.remove();
+                fig.complete();
             });
 
             // need getData before removeNonFileInputsNames

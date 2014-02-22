@@ -83,11 +83,11 @@
                 beforeSend: function () {
                     console.log('beforeSend');
                 },
-                success: function (response, status) {
-                    console.log('success', response, status);
+                success: function (response, metaData) {
+                    console.log('success', response, metaData);
                 },
-                error: function (response, status) {
-                    console.log('error', response, status);
+                error: function (response, metaData) {
+                    console.log('error', response, metaData);
                 },
                 complete: function () {
                     console.log('complete');

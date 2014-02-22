@@ -1,14 +1,11 @@
 <?php
+http_response_code(200);
 
 function setJqueryFileAjaxResponseCode ($response, $httpResponseCode = 200) {
-    http_response_code($httpResponseCode);
-    $id = 'file-ajax-response-code-id-' . uniqid();
+    // setting actual response code to an error response breaks ie8
+    // dont -> http_response_code($httpResponseCode); if set to an error code
     return $response . '' .
-    '<script id="' . $id . '">' .
-        'window.parent.jQuery.FileAjaxResponseCode(' . $httpResponseCode . ');' .
-        //'var thisScript = document.getElementById("' . $id . '");' .
-        //'thisScript.parentNode.removeChild(thisScript);' .
-    '</script>';
+    '#@#' . json_encode(array('status' => $httpResponseCode)) . '#@#';
 }
 
 function unzipFiles($file) {
@@ -29,9 +26,11 @@ function unzipFiles($file) {
 
 function uploadFile ($file) {
     if(is_array($file['name'])) {
+        $resultsArray = array();
         foreach(unzipFiles($file) as $f) {
-            uploadFile($f);
+            $resultsArray[] = uploadFile($f);
         }
+        return $resultsArray;
     }
     else {
         if ($file["error"] > 0) {
