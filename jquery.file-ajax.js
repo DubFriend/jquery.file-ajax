@@ -284,7 +284,7 @@
                         response = $.parseJSON(response);
                     }
 
-                    if(metaData.status >= 200 && metaData.status < 300) {
+                    if(!metaData || metaData && metaData.status >= 200 && metaData.status < 300) {
                         if(fig.success) {
                             fig.success(response, metaData);
                         }
