@@ -52,6 +52,7 @@ $response = uploadFile($_FILES['file']);
 
 echo setJqueryFileAjaxResponseCode(json_encode(array_merge(
     array('FILES' => $response),
-    array('POST' => $_POST)
-)), 200);
+    array('POST' => $_POST),
+    array('status' => 200)
+)), 400);
 ?>

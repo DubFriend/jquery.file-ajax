@@ -11,6 +11,12 @@ $('#file-ajax-form').fileAjax({
     // optional: url defaults to the form's action attribute
     url: 'respond.php',
 
+    // optional: if validate is present and returns false then the submission
+    // will be cancelled.
+    validate: function () {
+        return isValid() ? true : false;
+    }
+
     // optional: getData populates the request with the returned data, along
     // with the targeted forms file inputs.  Defaults to the targeted form's
     // named input values (sends the forms data in the same format it would be
@@ -43,11 +49,13 @@ $('#file-ajax-form').fileAjax({
     // the error callback instead. (Note that for some browsers that use the
     // iframe fallback, a response with an actual http response code that is of
     // type error will not be processed at all)
+    // You may optionally provide the status in the reponse instead of metaData
+    // if using dataType "json".
     success: function (response, metaData) {
         console.log('success', response, metaData);
     },
 
-    // optional: called if metaData.status not absent, and metaData.status is
+    // optional: called if status not absent, and status is
     // between 200 and 299.
     error: function (response, metaData) {
         console.log('error', response, metaData);

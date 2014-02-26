@@ -74,6 +74,10 @@
                 // },
 
                 dataType: 'json',
+
+                validate: function () {
+                    return true;
+                },
                 onprogress: function (e) {
                     if(e.lengthComputable) {
                         $('.percent-complete').html(e.loaded / e.total);

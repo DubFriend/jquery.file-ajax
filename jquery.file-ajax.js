@@ -238,78 +238,84 @@
             console.log('ajax2');
             e.preventDefault();
 
-            var formData = new FormData();
+            if(!fig.validate || fig.validate()) {
 
-            foreach(getData(), function (value, key) {
-                formData.append(key, value);
-            });
+                var formData = new FormData();
 
-            foreach(getFileElements(), function ($file, name) {
-                var file = $file[0];
-                if(file.files.length > 0) {
-                    if(file.files.length === 0) {
-                        formData.append(name, file.files[0]);
-                    }
-                    else {
-                        foreach(file.files, function (file, index) {
-                            formData.append(name + '[' + index + ']', file);
-                        });
-                    }
-                }
-            });
+                foreach(getData(), function (value, key) {
+                    formData.append(key, value);
+                });
 
-            $.ajax(excludedSet(union(fig, {
-                processData : false,
-                contentType: false,
-                data: null,
-                dataType: 'text',
-                beforeSend : function(xhr, settings) {
-                    settings.xhr = function () {
-                        var xhr = new window.XMLHttpRequest();
-                        xhr.upload.onprogress = bind(this, fig.onprogress);
-                        xhr.upload.onload = bind(this, fig.onload);
-                        xhr.upload.onerror = bind(this, fig.onerror);
-                        xhr.upload.onabort = bind(this, fig.onabort);
-                        return xhr;
-                    };
-                    settings.data = formData;
-                    if(fig.beforeSend) {
-                        fig.beforeSend();
-                    }
-                },
-                success: function (response, textStatus, jqXHR) {
-                    var metaData = extractMetaDataFromResonse(response);
-                    response = extractBodyFromResponse(response);
-                    if(fig.dataType.toLowerCase() === 'json') {
-                        response = $.parseJSON(response);
-                    }
-
-                    if(!metaData || metaData && metaData.status >= 200 && metaData.status < 300) {
-                        if(fig.success) {
-                            fig.success(response, metaData);
+                foreach(getFileElements(), function ($file, name) {
+                    var file = $file[0];
+                    if(file.files.length > 0) {
+                        if(file.files.length === 0) {
+                            formData.append(name, file.files[0]);
+                        }
+                        else {
+                            foreach(file.files, function (file, index) {
+                                formData.append(name + '[' + index + ']', file);
+                            });
                         }
                     }
-                    else if(fig.error) {
-                        fig.error(response, metaData);
-                    }
-                },
-                error: function (jqXHR) {
-                    var metaData = extractMetaDataFromResonse(jqXHR.responseText);
-                    var response = extractBodyFromResponse(jqXHR.responseText);
-                    if(fig.dataType.toLowerCase() === 'json') {
-                        response = $.parseJSON(response);
-                    }
+                });
 
-                    if(fig.error) {
-                        fig.error(response, metaData);
+                $.ajax(excludedSet(union(fig, {
+                    processData : false,
+                    contentType: false,
+                    data: null,
+                    dataType: 'text',
+                    beforeSend : function(xhr, settings) {
+                        settings.xhr = function () {
+                            var xhr = new window.XMLHttpRequest();
+                            xhr.upload.onprogress = bind(this, fig.onprogress);
+                            xhr.upload.onload = bind(this, fig.onload);
+                            xhr.upload.onerror = bind(this, fig.onerror);
+                            xhr.upload.onabort = bind(this, fig.onabort);
+                            return xhr;
+                        };
+                        settings.data = formData;
+                        if(fig.beforeSend) {
+                            fig.beforeSend();
+                        }
+                    },
+                    success: function (response, textStatus, jqXHR) {
+                        var metaData = extractMetaDataFromResonse(response);
+                        response = extractBodyFromResponse(response);
+                        if(fig.dataType.toLowerCase() === 'json') {
+                            response = $.parseJSON(response);
+                        }
+
+                        var status = metaData && metaData.status || response.status;
+
+                        if(!status || status >= 200 && status < 300) {
+                            if(fig.success) {
+                                fig.success(response, metaData);
+                            }
+                        }
+                        else if(fig.error) {
+                            fig.error(response, metaData);
+                        }
+                    },
+                    error: function (jqXHR) {
+                        var metaData = extractMetaDataFromResonse(jqXHR.responseText);
+                        var response = extractBodyFromResponse(jqXHR.responseText);
+                        if(fig.dataType.toLowerCase() === 'json') {
+                            response = $.parseJSON(response);
+                        }
+
+                        if(fig.error) {
+                            fig.error(response, metaData);
+                        }
+                    },
+                    complete: function () {
+                        if(fig.complete) {
+                            fig.complete();
+                        }
                     }
-                },
-                complete: function () {
-                    if(fig.complete) {
-                        fig.complete();
-                    }
-                }
-            })), ['$files', 'getData']);
+                })), ['$files', 'getData']);
+
+            }
         });
     };
 
@@ -318,88 +324,96 @@
             console.log('iframeAjax');
             e.stopPropagation();
 
-            var iframeID = 'file-ajax-id-' + (new Date()).getTime();
+            if(!fig.validate || fig.validate()) {
 
-            $('body').prepend(
-                '<iframe width="0" height="0" style="display:none;" ' +
-                'name="' + iframeID + '" id="' + iframeID + '"/>'
-            );
+                var iframeID = 'file-ajax-id-' + (new Date()).getTime();
 
-            var nonFileElements = {};
-            getNonFileInputs().each(function () {
-                var name = $(this).attr('name');
-                if(name) {
-                    nonFileElements[name] = $(this);
-                }
-            });
-
-            var removeNonFileInputsNames = function () {
-                foreach(nonFileElements, function ($el) {
-                    $el.removeAttr('name');
-                });
-            };
-
-            var restoreNonFileInputsNames = function () {
-                foreach(nonFileElements, function ($el, name) {
-                    $el.attr('name', name);
-                });
-            };
-
-            var $iframe = $('#' + iframeID);
-
-            $iframe.on('load', function(e) {
-                var responseText = $iframe.contents().find('body').html();
-                var metaData = extractMetaDataFromResonse(responseText);
-                var response = extractBodyFromResponse(responseText);
-
-                response = fig.dataType && fig.dataType.toLowerCase() === 'json' ?
-                        $.parseJSON(response) : response;
-
-                if(metaData && metaData.status >= 200 && metaData.status < 300) {
-                    if(fig.success) {
-                        fig.success(response, metaData);
-                    }
-                }
-                else if(fig.error) {
-                    fig.error(response, metaData);
-                }
-
-                restoreNonFileInputsNames();
-                removeHiddenInputs();
-                $iframe.remove();
-                if(fig.complete) {
-                    fig.complete();
-                }
-            });
-
-            // need getData before removeNonFileInputsNames
-            var data = getData();
-            // remove names of existing inputs so they are not sent to the
-            // server and send the data given by getData instead.
-            removeNonFileInputsNames();
-            var hiddenInputs = [];
-            foreach(data, function (value, name) {
-                var $hidden = $(
-                    '<input type="hidden" ' +
-                           'name="' + name + '" ' +
-                           'value="' + value + '"/>'
+                $('body').prepend(
+                    '<iframe width="0" height="0" style="display:none;" ' +
+                    'name="' + iframeID + '" id="' + iframeID + '"/>'
                 );
-                $form.append($hidden);
-                hiddenInputs.push($hidden);
-            });
 
-            var removeHiddenInputs = function () {
-                foreach(hiddenInputs, function ($el) {
-                    $el.remove();
+                var nonFileElements = {};
+                getNonFileInputs().each(function () {
+                    var name = $(this).attr('name');
+                    if(name) {
+                        nonFileElements[name] = $(this);
+                    }
                 });
-            };
 
-            $form.attr({
-                target: iframeID,
-                action: fig.url,
-                method: 'POST',
-                enctype: 'multipart/form-data'
-            });
+                var removeNonFileInputsNames = function () {
+                    foreach(nonFileElements, function ($el) {
+                        $el.removeAttr('name');
+                    });
+                };
+
+                var restoreNonFileInputsNames = function () {
+                    foreach(nonFileElements, function ($el, name) {
+                        $el.attr('name', name);
+                    });
+                };
+
+                var $iframe = $('#' + iframeID);
+
+                $iframe.on('load', function(e) {
+                    var responseText = $iframe.contents().find('body').html();
+                    var metaData = extractMetaDataFromResonse(responseText);
+                    var response = extractBodyFromResponse(responseText);
+
+                    response = fig.dataType && fig.dataType.toLowerCase() === 'json' ?
+                            $.parseJSON(response) : response;
+
+                    var status = metaData && metaData.status || response.status;
+
+                    if(!status || status >= 200 && status < 300) {
+                        if(fig.success) {
+                            fig.success(response, metaData);
+                        }
+                    }
+                    else if(fig.error) {
+                        fig.error(response, metaData);
+                    }
+
+                    restoreNonFileInputsNames();
+                    removeHiddenInputs();
+                    $iframe.remove();
+                    if(fig.complete) {
+                        fig.complete();
+                    }
+                });
+
+                // need getData before removeNonFileInputsNames
+                var data = getData();
+                // remove names of existing inputs so they are not sent to the
+                // server and send the data given by getData instead.
+                removeNonFileInputsNames();
+                var hiddenInputs = [];
+                foreach(data, function (value, name) {
+                    var $hidden = $(
+                        '<input type="hidden" ' +
+                               'name="' + name + '" ' +
+                               'value="' + value + '"/>'
+                    );
+                    $form.append($hidden);
+                    hiddenInputs.push($hidden);
+                });
+
+                var removeHiddenInputs = function () {
+                    foreach(hiddenInputs, function ($el) {
+                        $el.remove();
+                    });
+                };
+
+                $form.attr({
+                    target: iframeID,
+                    action: fig.url,
+                    method: 'POST',
+                    enctype: 'multipart/form-data'
+                });
+            }
+            else {
+                e.preventDefault();
+            }
         });
     };
 
