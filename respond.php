@@ -3,8 +3,8 @@
 function setJqueryFileAjaxResponseCode ($response, $httpResponseCode = 200) {
     // setting actual response code to an error response breaks ie8
     // dont -> http_response_code($httpResponseCode); if set to an error code
-    return $response . '';
-    // '#@#' . json_encode(array('status' => $httpResponseCode)) . '#@#';
+    return $response . '' .
+    '#@#' . json_encode(array('status' => $httpResponseCode)) . '#@#';
 }
 
 function unzipFiles($file) {
@@ -54,5 +54,5 @@ echo setJqueryFileAjaxResponseCode(json_encode(array_merge(
     array('FILES' => $response),
     array('POST' => $_POST),
     array('status' => 200)
-)), 400);
+)), 200);
 ?>

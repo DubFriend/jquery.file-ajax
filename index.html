@@ -88,12 +88,14 @@
                 },
                 success: function (response, metaData) {
                     console.log('success', response, metaData);
+                    // $('#file-ajax-form').fileAjax.clearFileInputs();
+                    this.clear();
                 },
                 error: function (response, metaData) {
                     console.log('error', response, metaData);
                 },
-                complete: function () {
-                    console.log('complete');
+                complete: function (response, metaData) {
+                    console.log('complete', response, metaData);
                 }
             });
         });
