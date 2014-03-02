@@ -225,7 +225,12 @@
             $input.is('input[type="checkbox"]') ||
             $input.is('input[type="radio"]')
         ) {
-            $input.prop('checked', value ? true : false);
+            if(value === '' || value === null) {
+                $input.prop('checked', false);
+            }
+            else {
+                $input.filter('[value="' + value + '"]').prop('checked', true);
+            }
         }
     };
 

@@ -90,6 +90,7 @@
                     console.log('success', response, metaData);
                     // $('#file-ajax-form').fileAjax.clearFileInputs();
                     this.clear();
+                    this.set('check[]', 'a');
                 },
                 error: function (response, metaData) {
                     console.log('error', response, metaData);
