@@ -115,7 +115,6 @@
         );
     };
 
-    // var getData = function (figGetData) {
     var getData = function (figData) {
         var flattenData = function (data) {
             var formatted = {};
@@ -182,8 +181,6 @@
         };
 
         return figData ? flattenData(figData) : getFormsData();
-
-        // return figGetData ? flattenData(figGetData()) : getFormsData();
     };
 
     var extractMetaDataFromResonse = function (text) {
@@ -295,7 +292,6 @@
         };
     };
 
-    // var ajax2 = function (fig) {
     var ajax2 = function (figFN) {
         // get object of $fileElements where the keys are
         // names formatted for a FormData object.
@@ -497,34 +493,9 @@
         });
     };
 
-    // var fileAjax = function (fig) {
-    //     $form = $(this);
-
-    //     if(!$form.is('form')) {
-    //         throw 'selected element must be a form element';
-    //     }
-
-    //     fig.url = fig.url || $form.attr('action');
-
-    //     getData = partial(getData, fig.getData);
-
-    //     if(
-    //         $.support.ajax &&
-    //         typeof FormData !== "undefined" &&
-    //         fig.forceIFrame !== true
-    //     ) {
-    //         ajax2(fig);
-    //     }
-    //     else {
-    //         iframeAjax(fig);
-    //     }
-    // };
-
     var applyFigDefaults = function (fig) {
         fig.url = fig.url || $form.attr('action');
-        // getData = partial(getData, fig.data);
         fig.data = getData(fig.data);
-
         return fig;
     };
 
@@ -534,10 +505,6 @@
         if(!$form.is('form')) {
             throw 'selected element must be a form element';
         }
-
-        // fig.url = fig.url || $form.attr('action');
-
-        // getData = partial(getData, fig.getData);
 
         if(
             $.support.ajax &&

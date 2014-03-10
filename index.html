@@ -56,24 +56,14 @@
             'use strict';
 
             $('#file-ajax-form').fileAjax(function () {
-                // url is optional, defaults to form's action attribute
-                // url: 'respond.php',
-
-                // for debugging
-                // forceIFrame: true,
-
-                // getData is optional. It will default to the forms inputs that
-                // have name attributes.
-                // If getData is supplied, fileAjax will still obtain
-                // file inputs from the form, but will ignore other inputs.
-                // getData: function () {
-                //     return {
-                //         array: ['a', 'b'],
-                //         object: { a: 1, b: [9, 10] }
-                //     };
-                // },
                 return {
+                    // url is optional, defaults to form's action attribute
+                    // url: 'respond.php',
                     dataType: 'json',
+                    // data is optional. It will default to the forms inputs that
+                    // have name attributes.
+                    // If data is supplied, fileAjax will still obtain
+                    // file inputs from the form, but will ignore other inputs.
                     // data: {
                     //     array: ['a', 'b'],
                     //     object: { a: 1, b: [9, 10] }
@@ -104,53 +94,6 @@
                 }
             }, false); //true for force iframe (meant for debugging).
         });
-
-
-        //     $('#file-ajax-form').fileAjax({
-        //         // url is optional, defaults to form's action attribute
-        //         // url: 'respond.php',
-
-        //         // for debugging
-        //         // forceIFrame: true,
-
-        //         // getData is optional. It will default to the forms inputs that
-        //         // have name attributes.
-        //         // If getData is supplied, fileAjax will still obtain
-        //         // file inputs from the form, but will ignore other inputs.
-        //         // getData: function () {
-        //         //     return {
-        //         //         array: ['a', 'b'],
-        //         //         object: { a: 1, b: [9, 10] }
-        //         //     };
-        //         // },
-
-        //         dataType: 'json',
-
-        //         validate: function () {
-        //             return true;
-        //         },
-        //         onprogress: function (e) {
-        //             if(e.lengthComputable) {
-        //                 $('.percent-complete').html(e.loaded / e.total);
-        //             }
-        //         },
-        //         beforeSend: function () {
-        //             console.log('beforeSend');
-        //         },
-        //         success: function (response, metaData) {
-        //             console.log('success', response, metaData);
-        //             // $('#file-ajax-form').fileAjax.clearFileInputs();
-        //             this.clear();
-        //             this.set('check[]', 'a');
-        //         },
-        //         error: function (response, metaData) {
-        //             console.log('error', response, metaData);
-        //         },
-        //         complete: function (response, metaData) {
-        //             console.log('complete', response, metaData);
-        //         }
-        //     });
-        // });
     </script>
 </body>
 </html>
