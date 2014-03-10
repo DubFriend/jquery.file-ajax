@@ -337,12 +337,12 @@
                 foreach(getFileElements(), function ($file, name) {
                     var file = $file[0];
                     if(file.files.length > 0) {
-                        if(file.files.length === 0) {
+                        if(file.files.length === 1) {
                             formData.append(name, file.files[0]);
                         }
                         else {
                             foreach(file.files, function (file, index) {
-                                console.log(file);
+                                console.log('file', file);
                                 formData.append(name + '[' + index + ']', file);
                             });
                         }
