@@ -439,6 +439,8 @@
 
                 var $iframe = $('#' + iframeID);
 
+                applyUserFunction(fig.beforeSend);
+
                 $iframe.on('load', function(e) {
                     var responseText = $iframe.contents().find('body').html();
                     var parsedResponse = extractResponse(
