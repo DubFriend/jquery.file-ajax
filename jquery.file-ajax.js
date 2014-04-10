@@ -1,3 +1,7 @@
+// jquery.file-ajax version 0.0.0
+// Brian Detering
+// https://github.com/DubFriend/jquery.file-ajax
+// MIT License
 (function ($) {
     'use strict';
 

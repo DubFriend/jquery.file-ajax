@@ -82,14 +82,16 @@ enclose any metadata (json) in the response body with the delimeter "#@#".
 echo $restOfResponse . '#@#' . json_encode(array('status' => 404)) . '#@#';
 ```
 
+If no metadata is found in the response, file-ajax will look for a status field
+on the normal response (if the response is json)
+
 in order to trigger jquery.file-ajax's error response, a status value not
-between 200, and 299 should be supplied in the meta data.  The actual http
-response status will not be used (to maintain consistent behavior with
-older browsers)
+between 200, and 299 should be supplied in the meta data or response body.
+The actual http response status will not be used (to maintain consistent
+behavior with older browsers)
 
 jquery.file-ajax supports file inputs with the "multiple" attribute, but
 currently does not supply a fallback for browsers that do not support the
 "multiple" attribute.
-
 
 Tested in Chrome, Firefox and IE8.
